@@ -1,3 +1,5 @@
+import numpy as np
+
 class Bear:
 
     def __init__(self):
@@ -26,6 +28,12 @@ class Bear:
         for key in params["indexes"].keys():
             min_row = min([tup[0] for tup in params["indexes"][key]])
             max_row = max([tup[0] for tup in params["indexes"][key]])
+            min_col = min([tup[1] for tup in params["indexes"][key]])
+            max_col = max([tup[1] for tup in params["indexes"][key]])
+            self.matrices[key] = np.zeros((max_row - min_row, max_col - min_col))
+            self.matrices[key] = params["masks"][key]
+            
+    return self
 
 
 
