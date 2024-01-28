@@ -9,11 +9,11 @@ class Bear:
 
     def build_partial_matrices(self):
         for key in self.params["indexes"].keys():
+            min_row = min([tup[0] for tup in self.params["indexes"][key]])
+            max_row = max([tup[0] for tup in self.params["indexes"][key]])
+            min_col = min([tup[1] for tup in self.params["indexes"][key]])
+            max_col = max([tup[1] for tup in self.params["indexes"][key]])
             if key not in self.matrices.keys():
-                min_row = min([tup[0] for tup in self.params["indexes"][key]])
-                max_row = max([tup[0] for tup in self.params["indexes"][key]])
-                min_col = min([tup[1] for tup in self.params["indexes"][key]])
-                max_col = max([tup[1] for tup in self.params["indexes"][key]])
                 self.matrices[key] = np.zeros((max_row - min_row, max_col - min_col))
                 self.matrices[key] = self.params["masks"][key]
             else:
@@ -33,8 +33,20 @@ class Bear:
     def solve_area(self, D_v, D_u, T, h_t, h_x, u_0, f, g):
         for t in T:
             for key in self.matrices.keys():
+                min_row = min([tup[0] for tup in self.params["indexes"][key]])
+                max_row = max([tup[0] for tup in self.params["indexes"][key]])
+                min_col = min([tup[1] for tup in self.params["indexes"][key]])
+                max_col = max([tup[1] for tup in self.params["indexes"][key]])
+                x = np.arange(min_row, max_row, h_x)
+                y = np.arange(min_col, max_col, h_x)
+                xx = np.meshgrid(x, y)[0]
+                yy = np.meshgrid(x, y)[1]
+                if t == 0:
+                    #.... tu coś będzie
+                else:
+                    self.matrices[key][1:-1,1:-1] =
                 # środek
-                self.matrices[key][1:-1, 1:-1] = self.matrices[key][1:-1, 1:-1] + ( ) * ( )  + self.params['force_term'](self.matrices[key][1:-1, 1:-1])
+                #self.matrices[key][1:-1, 1:-1] = self.matrices[key][1:-1, 1:-1] + ( ) * ( )  + self.params['force_term'](self.matrices[key][1:-1, 1:-1])
                 # ściany
         # for key in self.matrices.keys():
         #     for t in T:
@@ -77,6 +89,12 @@ params = {"indexes": {"i": [(0, 0), (0, 10), (110, 0), (110, 10)],
           "masks": {"i": 0, "ii": 0, "iii": 1, "iv": 0, "v": 0, "vi": 1, "vii": 1, "viii": 0, "ix": 0,
                     "x": 0, "xi": 1, "xii": 1, "xiii": 1, "xiv": 0, "xv": 0, "xvi": 1, "xvii": 0,
                     "xviii": 1}}
+
+h_t = 0.1
+u_0 = lambda x, y: np.abs(np.random.random(x.shape))
+v_0 = lambda x, y: np.abs(np.random.random(x.shape))
+T = np.arange(0, 10, h_t)
+g = lambda x, y: 0
 
 coralgol = Bear(params)
 coralgol.build_partial_matrices()
