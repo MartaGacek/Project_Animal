@@ -30,8 +30,8 @@ class Bear:
         return self
 
 
-    def solve_area(self, D_v, D_u, T, h_t, h_x, u_0, f, g):
-        for t in T:
+    def solve_area(self, D_v, D_u, T, h_t, h_x, u_0, v_0, f, g):
+        for t, ind_t in enumerate(T):
             for key in self.matrices.keys():
                 min_row = min([tup[0] for tup in self.params["indexes"][key]])
                 max_row = max([tup[0] for tup in self.params["indexes"][key]])
@@ -39,12 +39,40 @@ class Bear:
                 max_col = max([tup[1] for tup in self.params["indexes"][key]])
                 x = np.arange(min_row, max_row, h_x)
                 y = np.arange(min_col, max_col, h_x)
-                xx = np.meshgrid(x, y)[0]
-                yy = np.meshgrid(x, y)[1]
+                #xx = np.meshgrid(x, y)[0]
+                #yy = np.meshgrid(x, y)[1]
+                final_matrix_u = np.zeros(x.shape[0], y.shape[1], len(T))
+                final_matrix_v = np.zeros(x.shape[0], y.shape[1], len(T))
                 if t == 0:
+                    final_matrix_u = u_0(x, y)
+                    final_matrix_v = v_0(x, y)
                     #.... tu coś będzie
                 else:
-                    self.matrices[key][1:-1,1:-1] =
+                    final_matrix_u[0, :, ind_t+1] = final_matrix_u[1,:,t+1] + h_x*g(T[t+1])
+                    final_matrix_u[-1,:,t+1] = final_matrix_u[-2,:,t+1] + h_x*g(T[t+1])
+                    final_matrix_u[:,0,t+1] = final_matrix_u[:,1,t+1] + h_x*g(T[t+1])
+                    final_matrix_u[:,-1,t+1] = final_matrix_u[:,-2,t+1] + h_x*g(T[t+1])
+                    final_matrix_u[1:-1,1:-1, t+1] = h_t * (D_u/(h_x**2) * (final_matrix_u[2:, 1:-1, t] + + final_matrix_u[:-2, 1:-1, t] 
+                                                               + final_matrix_u[1:-1, :-2, t] + final_matrix_u[1:-1, 2:, t] - 4 * final_matrix_u[1:-1, 1:-1, t]) 
+                                               - C_1*final_matrix_u[1:-1, 1:-1, t] + (C_2*final_matrix_u[1:-1, 1:-1, t]**2)/final_matrix_v[1:-1, 1:-1, t + C_3) + final_matrix_u[1:-1, 1:-1, t]
+                    final_matrix_v[0, :, t+1] = final_matrix_v[1,:,t+1] + h_x*g(T[t+1])
+                    final_matrix_v[-1,:,t+1] = final_matrix_v[-2,:,t+1] + h_x*g(T[t+1])
+                    final_matrix_v[:,0,t+1] = final_matrix_v[:,1,t+1] + h_x*g(T[t+1])
+                    final_matrix_v[:,-1,t+1] = final_matrix_v[:,-2,t+1] + h_x*g(T[t+1])
+                    final_matrix_v[1:-1,1:-1, t+1] = h_t * (D_v/(h_x**2) * (final_matrix_v[2:, 1:-1, t] + final_matrix_v[:-2, 1:-1, t] + final_matrix_v[1:-1, :-2, t] + 
+                                                             final_matrix_v[1:-1, 2:, t] - 4 * final_matrix_v[1:-1, 1:-1, t]) + C_4*final_matrix_u[1:-1, 1:-1, t]**2 - 
+                                                            C_5*final_matrix_v[1:-1, 1:-1, t]) + final_matrix_v[1:-1, 1:-1, t]
+
+
+
+
+
+
+
+
+
+        
+            #self.matrices[key][1:-1,1:-1] =
                 # środek
                 #self.matrices[key][1:-1, 1:-1] = self.matrices[key][1:-1, 1:-1] + ( ) * ( )  + self.params['force_term'](self.matrices[key][1:-1, 1:-1])
                 # ściany
@@ -59,7 +87,7 @@ class Bear:
         #             u[-1,:,k] = u[-2,:,k] + h_x*g(T[k])
         #             u[:,0,k] = u[:,1,k] + h_x*g(T[k])
         #             u[:,-1,k] = u[:,-2,k] + h_x*g(T[k])
-        #             v[1:-1,1:-1, k] = h_t * (D_v/(h_x**2) * (v[2:, 1:-1, k-1] + + v[:-2, 1:-1, k-1] + v[1:-1, :-2, k-1] + v[1:-1, 2:, k-1] - 4 * v[1:-1, 1:-1, k-1]) + C_4*u[1:-1, 1:-1, k-1]**2 - C_5*v[1:-1, 1:-1, k-1]) + v[1:-1, 1:-1, k-1]
+        #             v[1:-1,1:-1, k] = h_t * (D_v/(h_x**2) * (v[2:, 1:-1, k-1] + v[:-2, 1:-1, k-1] + v[1:-1, :-2, k-1] + v[1:-1, 2:, k-1] - 4 * v[1:-1, 1:-1, k-1]) + C_4*u[1:-1, 1:-1, k-1]**2 - C_5*v[1:-1, 1:-1, k-1]) + v[1:-1, 1:-1, k-1]
         #             v[0,:,k] = v[1,:,k] + h_x*g(T[k])
         #             v[-1,:,k] = v[-2,:,k] + h_x*g(T[k])
         #             v[:,0,k] = v[:,1,k] + h_x*g(T[k])
