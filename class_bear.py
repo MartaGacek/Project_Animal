@@ -14,7 +14,6 @@ class Bear:
             max_row = max([tup[0] for tup in self.params["indexes"][key]])
             min_col = min([tup[1] for tup in self.params["indexes"][key]])
             max_col = max([tup[1] for tup in self.params["indexes"][key]])
-
             if key not in self.matrices.keys():
                 self.matrices["u"][key] = np.ones((max_row - min_row, max_col - min_col))
                 self.matrices["u"][key] *= self.params["masks"]["u"][key]
@@ -31,12 +30,10 @@ class Bear:
             max_row = max([tup[0] for tup in self.params["indexes"][key]])
             min_col = min([tup[1] for tup in self.params["indexes"][key]])
             max_col = max([tup[1] for tup in self.params["indexes"][key]])
-
             result_min_row = self.params["indexes"][key][0][0]
             result_max_row = self.params["indexes"][key][2][0]
             result_min_col = self.params["indexes"][key][0][1]
             result_max_col = self.params["indexes"][key][1][1]
-
             self.matrix["u"][result_min_row:result_max_row, result_min_col:result_max_col] = self.matrices["u"][key]
             self.matrix["v"][result_min_row:result_max_row, result_min_col:result_max_col] = self.matrices["v"][key]
         return self
@@ -44,20 +41,20 @@ class Bear:
     def solve_area(self, D_v, D_u, T, h_t, h_x, u_0, v_0, g, C_1, C_2, C_3, C_4, C_5):
         for ind_t, t in enumerate(T):
             for key in self.matrices["u"].keys():
-                min_row = min([tup[0] for tup in self.params["indexes"][key]])
-                max_row = max([tup[0] for tup in self.params["indexes"][key]])
-                min_col = min([tup[1] for tup in self.params["indexes"][key]])
-                max_col = max([tup[1] for tup in self.params["indexes"][key]])
+                min_row = self.params["indexes"][key][0][0]
+                max_row = self.params["indexes"][key][2][0]
+                min_col = self.params["indexes"][key][0][1]
+                max_col = self.params["indexes"][key][1][1]
                 x = np.arange(min_row, max_row, h_x)
                 y = np.arange(min_col, max_col, h_x)
-                # xx, yy = np.meshgrid(x, y)
-                xx = np.meshgrid(x, y)[0]
-                yy = np.meshgrid(x, y)[1]
+                xx, yy = np.meshgrid(x, y)
                 final_matrix_u = self.matrices["u"][key]
                 final_matrix_v = self.matrices["v"][key]
                 if t == 0:
                     final_matrix_u = u_0(xx, yy)
+                    final_matrix_u = np.transpose(final_matrix_u)
                     final_matrix_v = v_0(xx, yy)
+                    final_matrix_v = np.transpose(final_matrix_v)
                 else:
                     self.matrices["u"][key][1:-1, 1:-1] = h_t * (D_u / (h_x ** 2) * (final_matrix_u[2:, 1:-1] +
                                                                                      final_matrix_u[:-2,
@@ -80,21 +77,19 @@ class Bear:
                                                 final_matrix_v[1:-1, 1:-1]) + C_4 * final_matrix_u[1:-1,
                                                                                     1:-1] ** 2 -
                             C_5 * final_matrix_v[1:-1, 1:-1]) + final_matrix_v[1:-1, 1:-1]
-
                     self.matrices["v"][key][0, :] = final_matrix_v[1, :] + h_x * g(T[ind_t])
                     self.matrices["v"][key][-1, :] = final_matrix_v[-2, :] + h_x * g(T[ind_t])
                     self.matrices["v"][key][:, 0] = final_matrix_v[:, 1] + h_x * g(T[ind_t])
                     self.matrices["v"][key][:, -1] = final_matrix_v[:, -2] + h_x * g(T[ind_t])
-
                 self.matrices["u"][key] = final_matrix_u
                 self.matrices["v"][key] = final_matrix_v
 
-                if self.matrix["u"][min_row:max_row, min_col:max_col].shape == self.matrices["u"][key].shape:
+                if self.params["masks"]["u"][key] == 1:
                     self.matrix["u"][min_row:max_row, min_col:max_col] = self.matrices["u"][key]
                 else:
                     pass
 
-                if self.matrix["v"][min_row:max_row, min_col:max_col].shape == self.matrices["v"][key].shape:
+                if self.params["masks"]["v"][key] == 1:
                     self.matrix["v"][min_row:max_row, min_col:max_col] = self.matrices["v"][key]
                 else:
                     pass
